@@ -1,0 +1,10 @@
+# alembic/versions/ — Alembic stores auto-generated migration files here.
+#
+# Each file is named like:
+#   abc123_add_description_column.py
+#
+# You NEVER write these by hand. Generate them with:
+#   uv run alembic revision --autogenerate -m "describe what changed"
+#
+# Then apply them with:
+#   uv run alembic upgrade head

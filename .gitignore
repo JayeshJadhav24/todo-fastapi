@@ -1,0 +1,52 @@
+# ── Python ────────────────────────────────────────────────────────────────── #
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# ── Virtual environments ──────────────────────────────────────────────────── #
+.venv/
+venv/
+env/
+.env/
+
+# ── Environment variables (NEVER commit real secrets) ─────────────────────── #
+.env
+# Exception: .env.example is safe to commit (no real values)
+!.env.example
+
+# ── Database files ────────────────────────────────────────────────────────── #
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Testing & Coverage ────────────────────────────────────────────────────── #
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ── Ruff cache ────────────────────────────────────────────────────────────── #
+.ruff_cache/
+
+# ── Build artifacts ───────────────────────────────────────────────────────── #
+dist/
+build/
+*.egg-info/
+
+# ── IDE / Editor ─────────────────────────────────────────────────────────── #
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Logs ─────────────────────────────────────────────────────────────────── #
+*.log
+logs/
+
+# ── UV ───────────────────────────────────────────────────────────────────── #
+# uv.lock SHOULD be committed — it pins exact versions for reproducible builds
+# Do NOT add uv.lock here
