@@ -1,68 +1,148 @@
-# .github/workflows/ci.yml - GitHub Actions CI/CD Pipeline
-#
-# Pipeline order:
-#   1. Install uv
-#   2. Install dependencies
-#   3. Ruff lint   <- if this fails, pipeline FAILS (quality gate)
-#   4. Ruff format check
-#   5. Unit tests
-#   6. Integration tests
-#   7. E2E tests
-#   8. Coverage report
-#
-# Matrix: runs on Python 3.11 AND 3.12 in parallel.
-
 name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
+
+# Each job is a separate box in the GitHub Actions flow diagram.
+# `needs:` creates the arrows between boxes.
+#
+# Visual flow:
+#   lint
+#    |
+#    +---> unit-tests
+#    |          |
+#    +---> integration-tests
+#    |          |
+#    +---> e2e-tests
+#               |
+#           coverage  (runs after all 3 test jobs pass)
 
 jobs:
-  test:
-    name: "Python ${{ matrix.python-version }} - Lint + Test"
+
+  # ================================================================ #
+  # JOB 1: Lint (quality gate)                                        #
+  # If this fails, ALL downstream jobs are skipped automatically.    #
+  # ================================================================ #
+  lint:
+    name: "Lint & Format"
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        python-version: ["3.11", "3.12"]
-      fail-fast: false
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v5
         with:
-          version: "latest"
-
-      - name: Set up Python ${{ matrix.python-version }}
-        run: uv python install ${{ matrix.python-version }}
+          python-version: "3.12"
 
       - name: Install dependencies
         run: uv sync --all-extras
 
-      - name: Run Ruff lint
+      - name: Ruff lint check
         run: uv run ruff check .
 
-      - name: Check code formatting
+      - name: Ruff format check
         run: uv run ruff format --check .
 
-      - name: Unit tests
+  # ================================================================ #
+  # JOB 2: Unit tests  (needs lint to pass first)                    #
+  # ================================================================ #
+  unit-tests:
+    name: "Unit Tests"
+    runs-on: ubuntu-latest
+    needs: lint
+
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Run unit tests
         run: uv run pytest app/tests/test_unit.py --override-ini="addopts=" -v
 
-      - name: Integration tests
+  # ================================================================ #
+  # JOB 3: Integration tests  (needs lint to pass first)             #
+  # ================================================================ #
+  integration-tests:
+    name: "Integration Tests"
+    runs-on: ubuntu-latest
+    needs: lint
+
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Run integration tests
         run: uv run pytest app/tests/test_integration.py --override-ini="addopts=" -v
 
-      - name: E2E tests
+  # ================================================================ #
+  # JOB 4: E2E tests  (needs lint to pass first)                     #
+  # ================================================================ #
+  e2e-tests:
+    name: "E2E Tests"
+    runs-on: ubuntu-latest
+    needs: lint
+
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Run E2E tests
         run: uv run pytest app/tests/test_e2e.py --override-ini="addopts=" -v
 
-      - name: Coverage report
+  # ================================================================ #
+  # JOB 5: Coverage report  (needs ALL 3 test jobs to pass first)    #
+  # ================================================================ #
+  coverage:
+    name: "Coverage Report"
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, e2e-tests]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Generate coverage report
         run: uv run pytest --cov=app --cov-report=xml --cov-report=term-missing

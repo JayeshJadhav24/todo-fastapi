@@ -26,15 +26,12 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
 
-from alembic import context
-
-# --------------------------------------------------------------------------- #
 # Import app models so Alembic can detect schema changes.
 # This MUST come before target_metadata is set.
-# --------------------------------------------------------------------------- #
-from app.core.config import settings  # noqa: E402  (import after stdlib)
-from app.core.database import Base  # noqa: E402
-import app.models.task  # noqa: F401, E402  — registers Task with Base.metadata
+import app.models.task  # noqa: F401  — registers Task with Base.metadata
+from alembic import context
+from app.core.config import settings
+from app.core.database import Base
 
 # --------------------------------------------------------------------------- #
 # Alembic Config object — provides access to alembic.ini values
