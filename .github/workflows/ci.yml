@@ -1,22 +1,16 @@
-# .github/workflows/ci.yml — GitHub Actions CI/CD Pipeline
-#
-# WHAT it does:
-#   Every time code is pushed or a Pull Request is opened, GitHub runs
-#   this pipeline automatically.  It installs dependencies, lints the code,
-#   runs all three levels of tests, and generates a coverage report.
-#
-# WHY matrix strategy?
-#   We test on Python 3.11 AND 3.12 to catch version-specific bugs.
-#   The jobs run in parallel — free speed on GitHub Actions.
+# .github/workflows/ci.yml - GitHub Actions CI/CD Pipeline
 #
 # Pipeline order:
 #   1. Install uv
 #   2. Install dependencies
-#   3. Ruff lint   ← if this fails, pipeline FAILS (code quality gate)
-#   4. Unit tests
-#   5. Integration tests
-#   6. E2E tests
-#   7. Coverage report
+#   3. Ruff lint   <- if this fails, pipeline FAILS (quality gate)
+#   4. Ruff format check
+#   5. Unit tests
+#   6. Integration tests
+#   7. E2E tests
+#   8. Coverage report
+#
+# Matrix: runs on Python 3.11 AND 3.12 in parallel.
 
 name: CI/CD Pipeline
 
@@ -32,74 +26,43 @@ on:
 
 jobs:
   test:
-    name: "Python ${{ matrix.python-version }} — Lint + Test"
+    name: "Python ${{ matrix.python-version }} - Lint + Test"
     runs-on: ubuntu-latest
 
-    # Test on two Python versions simultaneously
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
-      fail-fast: false  # don't cancel other matrix jobs if one fails
+      fail-fast: false
 
     steps:
-      # ── 1. Checkout source code ──────────────────────────────────────── #
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ── 2. Install uv (fast Python package manager) ──────────────────── #
       - name: Install uv
         uses: astral-sh/setup-uv@v3
         with:
           version: "latest"
 
-      # ── 3. Set up the correct Python version ─────────────────────────── #
       - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
 
-      # ── 4. Install all dependencies from pyproject.toml ──────────────── #
-      #    `--all-extras` includes dev dependencies (pytest, ruff, httpx)
       - name: Install dependencies
-        working-directory: todo-fastapi
         run: uv sync --all-extras
 
-      # ── 5. Ruff lint (QUALITY GATE) ───────────────────────────────────── #
-      #    If linting fails, the entire pipeline stops here.
-      #    This enforces code quality on every commit.
       - name: Run Ruff lint
-        working-directory: todo-fastapi
         run: uv run ruff check .
 
-      # ── 6. Ruff format check ──────────────────────────────────────────── #
       - name: Check code formatting
-        working-directory: todo-fastapi
         run: uv run ruff format --check .
 
-      # ── 7. Unit tests ────────────────────────────────────────────────── #
       - name: Unit tests
-        working-directory: todo-fastapi
-        run: uv run pytest app/tests/test_unit.py -v
+        run: uv run pytest app/tests/test_unit.py --override-ini="addopts=" -v
 
-      # ── 8. Integration tests ─────────────────────────────────────────── #
       - name: Integration tests
-        working-directory: todo-fastapi
-        run: uv run pytest app/tests/test_integration.py -v
+        run: uv run pytest app/tests/test_integration.py --override-ini="addopts=" -v
 
-      # ── 9. E2E tests ─────────────────────────────────────────────────── #
       - name: E2E tests
-        working-directory: todo-fastapi
-        run: uv run pytest app/tests/test_e2e.py -v
+        run: uv run pytest app/tests/test_e2e.py --override-ini="addopts=" -v
 
-      # ── 10. Full coverage report ──────────────────────────────────────── #
       - name: Coverage report
-        working-directory: todo-fastapi
         run: uv run pytest --cov=app --cov-report=xml --cov-report=term-missing
-
-      # ── 11. Upload coverage to Codecov (optional) ────────────────────── #
-      #    Sign up at codecov.io and add CODECOV_TOKEN to GitHub Secrets
-      #    Then uncomment these lines:
-      #
-      # - name: Upload coverage to Codecov
-      #   uses: codecov/codecov-action@v4
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     files: todo-fastapi/coverage.xml
