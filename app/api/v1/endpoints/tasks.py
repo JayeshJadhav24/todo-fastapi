@@ -39,8 +39,7 @@ router = APIRouter()
     response_model=list[TaskResponse],
     summary="List all tasks",
     description=(
-        "Returns a paginated list of every task. "
-        "Use `skip` and `limit` for pagination."
+        "Returns a paginated list of every task. Use `skip` and `limit` for pagination."
     ),
 )
 def list_tasks(

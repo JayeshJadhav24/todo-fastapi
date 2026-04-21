@@ -39,10 +39,10 @@ class Settings(BaseSettings):
     # Pydantic-settings config
     # ------------------------------------------------------------------ #
     model_config = SettingsConfigDict(
-        env_file=".env",          # load from .env file
+        env_file=".env",  # load from .env file
         env_file_encoding="utf-8",
-        extra="ignore",           # silently ignore unknown env vars
-        case_sensitive=False,     # APP_NAME == app_name
+        extra="ignore",  # silently ignore unknown env vars
+        case_sensitive=False,  # APP_NAME == app_name
     )
 
 

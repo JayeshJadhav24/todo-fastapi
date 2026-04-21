@@ -18,6 +18,6 @@ api_router = APIRouter()
 
 api_router.include_router(
     tasks.router,
-    prefix="/tasks",   # every task endpoint starts with /api/v1/tasks
-    tags=["Tasks"],    # groups endpoints in Swagger UI
+    prefix="/tasks",  # every task endpoint starts with /api/v1/tasks
+    tags=["Tasks"],  # groups endpoints in Swagger UI
 )

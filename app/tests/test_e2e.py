@@ -50,9 +50,7 @@ class TestFullTaskLifecycle:
     def test_step_2_list_tasks_shows_new_task(self, client: TestClient) -> None:
         """Step 2: The new task must appear in the task list."""
         # Re-create so we have a task (each test gets a fresh DB via conftest)
-        created = client.post(
-            "/api/v1/tasks/", json={"title": "Learn FastAPI"}
-        ).json()
+        created = client.post("/api/v1/tasks/", json={"title": "Learn FastAPI"}).json()
 
         response = client.get("/api/v1/tasks/")
 

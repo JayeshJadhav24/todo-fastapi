@@ -44,9 +44,7 @@ class Task(Base):
     description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
     # Completion flag
-    completed: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False
-    )
+    completed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # `lambda` is used so each row gets the CURRENT time at insert time,
     # not the time Python imported this module.

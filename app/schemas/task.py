@@ -30,7 +30,7 @@ class TaskBase(BaseModel):
     """Fields used in both creating and reading tasks."""
 
     title: str = Field(
-        ...,            # required (no default)
+        ...,  # required (no default)
         min_length=1,
         max_length=255,
         description="Short task title",

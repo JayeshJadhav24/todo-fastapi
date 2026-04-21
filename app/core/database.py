@@ -39,8 +39,8 @@ engine = create_engine(
 # --------------------------------------------------------------------------- #
 
 SessionLocal = sessionmaker(
-    autocommit=False,   # never auto-commit — we control when to save
-    autoflush=False,    # don't auto-flush before queries
+    autocommit=False,  # never auto-commit — we control when to save
+    autoflush=False,  # don't auto-flush before queries
     bind=engine,
 )
 
